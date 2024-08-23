@@ -1,0 +1,28 @@
+{
+    "manifest_version": 3,
+    "name": "Canvas Grade Drafts",
+    "version": "0.1",
+
+    "action": {},
+    "commands": {
+        "save-grade": {
+            "description": "Save and clear grade and rubric"
+        },
+        "load-grade": {
+            "description": "Load saved grade and rubric"
+        }
+    },
+    "description": "Saves Canvas grades as a draft",
+
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    },
+    "key": "",
+    "oauth2": {
+        "client_id": "",
+        "scopes": ["https://www.googleapis.com/auth/spreadsheets"]
+    },
+    "permissions": ["identity","tabs"],
+    "host_permissions": [""]
+}
