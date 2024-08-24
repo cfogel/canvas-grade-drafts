@@ -29,7 +29,7 @@ async function saveData(tab) {
     var { token } = await chrome.identity.getAuthToken({interactive: true});
 
     /* Spreadsheet fields:
-        course | assignment | student | (attempt) | grade | (comments from grader) | rubric | (grader) | (grading timestamp) | (loaded) 
+        course | assignment | student | (attempt) | grade | (comments from grader) | rubric | (grader) | grading timestamp | (loaded) 
     */
 
     const newRow = await addRows(token, [courseId, assignmentId, studentId, attempt, grade, JSON.stringify(submission_comments.filter(({author_id}) => author_id == grader_id).map(({comment}) => comment)), JSON.stringify(rubric_assessment), grader_id, graded_at, false])
@@ -47,12 +47,12 @@ async function loadData(tab) {
     const { values:rows } = await getRows(token)
 
     const data = rows.filter(([course,assignment,student,...rest]) => (course == courseId) && (assignment == assignmentId) && (student == studentId) && !rest.at(-1))
-                     .toSorted((a,b)=>Date.parse(a[8])-Date.parse(b[8])).at(-1)
+                     .toSorted((a,b)=>Date.parse(a[8])-Date.parse(b[8])).at(-1) // the most recent row for the course/assignment/student
 
     const [,,,,grade,,rubric] = data;
 
     let newData = await updateGrade(courseId,assignmentId,studentId,{...rubricToParams(JSON.parse(rubric)), 'submission[posted_grade]':grade})
-    if (newData.grade != grade) { // adjustments to rubric sums require a second API request
+    if (newData.grade != grade) { // manual adjustments to rubric sums require a second API request
         newData = await updateGrade(courseId,assignmentId,studentId,{'submission[posted_grade]':grade})
     }
     //console.log(newData)
