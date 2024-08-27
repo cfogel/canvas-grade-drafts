@@ -5,7 +5,6 @@ const emptyRubric = rubric => Object.fromEntries(Object.keys(rubric).flatMap(k =
 const rubricToParams = rubric => Object.fromEntries(Object.entries(rubric).flatMap(([key,{rating_id,comments,points}])=>[[`rubric_assessment[${key}][points]`,points],[`rubric_assessment[${key}][rating_id]`,rating_id],[`rubric_assessment[${key}][comments]`,comments]]))
 
 chrome.action.onClicked.addListener(async (tab) => {
-    //await saveData(tab)
 });
 
 chrome.commands.onCommand.addListener(async (command,tab) => {
@@ -22,10 +21,8 @@ chrome.commands.onCommand.addListener(async (command,tab) => {
 async function saveData(tab) {
     const [,courseId,assignmentId,studentId] = /\/courses\/(\d+)\/gradebook\/speed_grader\?assignment_id=(\d+)&student_id=(\d+)/.exec(tab.url)
     const data = await getSubmission(courseId,assignmentId,studentId)
-    //console.log(data)
 
-    const { attempt, grade, submission_comments, rubric_assessment, grader_id, graded_at } = data
-    const { course: {name:courseName}, assignment: {name:assignmentName}, user: {name:studentName} } = data
+    const { attempt, grade, submission_comments, rubric_assessment, grader_id, graded_at, course: {name:courseName}, assignment: {name:assignmentName}, user: {name:studentName} } = data
 
     var { token } = await chrome.identity.getAuthToken({interactive: true});
 
@@ -33,12 +30,13 @@ async function saveData(tab) {
         course | assignment | student | (attempt) | grade | (comments from grader) | rubric | (grader) | grading timestamp | (loaded) 
     */
 
-    const newDataRow = await addRows(token, DATA_RANGE, [courseId, assignmentId, studentId, attempt, grade, JSON.stringify(submission_comments.filter(({author_id}) => author_id == grader_id).map(({comment}) => comment)), JSON.stringify(rubric_assessment), grader_id, graded_at, false])
-    const newReadableRow = await addRows(token, READABLE_RANGE, [courseName, assignmentName, studentName, attempt, grade, JSON.stringify(submission_comments.filter(({author_id}) => author_id == grader_id).map(({comment}) => comment)), ...Object.values(rubric_assessment).flatMap(({points,comments})=>[points,comments]), grader_id, graded_at, false])
+    const [newDataRow,newReadableRow] = await Promise.all([
+        addRows(token, DATA_RANGE, [courseId, assignmentId, studentId, attempt, grade, JSON.stringify(submission_comments.filter(({author_id}) => author_id == grader_id).map(({comment}) => comment)), JSON.stringify(rubric_assessment), grader_id, graded_at, false]), 
+        addRows(token, READABLE_RANGE, [courseName, assignmentName, studentName, attempt, grade, JSON.stringify(submission_comments.filter(({author_id}) => author_id == grader_id).map(({comment}) => comment)), ...Object.values(rubric_assessment).flatMap(({points,comments})=>[points,comments]), grader_id, graded_at, false])
+    ])
 
     if (newDataRow?.updates?.updatedRows && newReadableRow?.updates?.updatedRows) {
         const newData = await updateGrade(courseId,assignmentId,studentId,emptyRubric(rubric_assessment))
-        //console.log(newData)
     }
 }
 
@@ -57,7 +55,6 @@ async function loadData(tab) {
     if (newData.grade != grade) { // manual adjustments to rubric sums require a second API request
         newData = await updateGrade(courseId,assignmentId,studentId,{'submission[posted_grade]':grade})
     }
-    //console.log(newData)
 }
 
 async function getSubmission(course,assignment,student) {
