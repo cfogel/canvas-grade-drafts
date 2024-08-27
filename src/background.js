@@ -82,7 +82,7 @@ async function getRows(token) {
         method: 'Get',
         headers: {Authorization: `Bearer ${token}`,'Content-Type': 'application/json'}
     }
-    return fetch(`${SHEETS_ENDPOINT}/v4/spreadsheets/${SPREADSHEET_ID}/values/${SPREADSHEET_RANGE}?valueRenderOption=UNFORMATTED_VALUE&key=${API_KEY}`,init).then(r => r.json())
+    return fetch(`${SHEETS_ENDPOINT}/v4/spreadsheets/${SPREADSHEET_ID}/values/${DATA_RANGE}?valueRenderOption=UNFORMATTED_VALUE&key=${API_KEY}`,init).then(r => r.json())
 }
 
 async function updateGrade(course,assignment,student,newGrades) {
