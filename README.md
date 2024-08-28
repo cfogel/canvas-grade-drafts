@@ -43,3 +43,52 @@ Spreadsheet range in [A1 notation](https://developers.google.com/sheets/api/guid
 
 ### `READABLE_RANGE`:
 Spreadsheet range in [A1 notation](https://developers.google.com/sheets/api/guides/concepts#cell)
+
+# Usage
+
+Right now, the only way to activate it is through keyboard shortcuts.
+
+## Save and clear grade and rubric
+
+Saves the data to the spreadsheet specified in `config.js`, then clears the Canvas grade and all of the rubric fields.
+
+### `DATA_RANGE` columns:
+
+1. Course ID
+2. Assignment ID
+3. Student ID
+4. Attempt number
+5. Grade
+6. Comments left by the grader (JSON list of comment text)
+7. Rubric data (JSON)
+8. Grader ID
+9. Grading timestamp
+10. Whether the row's data has been loaded (`false` when the data is saved; updated to `true` when the extension loads the data)
+
+### `READABLE_RANGE` columns:
+
+1. Course name
+2. Assignment name
+3. Student name
+4. Attempt number
+5. Grade
+6. Comments left by the grader (JSON list of comment text)
+
+For each row of the rubric:
+
+7. Rubric row #1 points
+8. Rubric row #1 comments
+9. Rubric row #2 points
+10. Rubric row #2 comments
+11. Rubric row #3 points
+12. etc. 
+
+...
+
+13. Grader ID
+14. Grading timestamp
+15. Whether the row's data has been loaded (currently always `false`)
+
+## Load saved grade and rubric
+
+Finds the most recent `DATA_RANGE` row that matches the course + assignment + student and hasn't already been loaded.  The grade and the rubric ratings, points, and comments are restored, and the last column's value is changed to `true`. 
