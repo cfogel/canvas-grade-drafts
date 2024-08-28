@@ -71,6 +71,33 @@ async function getSubmission(course,assignment,student) {
     return fetch(`${CANVAS_ENDPOINT}/api/v1/courses/${course}/assignments/${assignment}/submissions/${student}?${new URLSearchParams(['rubric_assessment','submission_comments','course','assignment','user'].map(i=>['include[]',i]))}`,init).then(r => r.json())
 }
 
+async function getAssignment(course,assignment) {
+    const init = {
+        method: 'Get',
+        headers: {Authorization: `Bearer ${CANVAS_TOKEN}`},
+        mode: 'no-cors'
+    }
+    return fetch(`${CANVAS_ENDPOINT}/api/v1/courses/${course}/assignments/${assignment}`,init).then(r => r.json())
+}
+
+async function getCourse(course) {
+    const init = {
+        method: 'Get',
+        headers: {Authorization: `Bearer ${CANVAS_TOKEN}`},
+        mode: 'no-cors'
+    }
+    return fetch(`${CANVAS_ENDPOINT}/api/v1/courses/${course}`,init).then(r => r.json())
+}
+
+async function getUser(id) {
+    const init = {
+        method: 'Get',
+        headers: {Authorization: `Bearer ${CANVAS_TOKEN}`},
+        mode: 'no-cors'
+    }
+    return fetch(`${CANVAS_ENDPOINT}/api/v1/users/${id}/profile`,init).then(r => r.json())
+}
+
 async function addRows(token,range,...vals) {
     const init = {
         method: 'POST',
@@ -132,8 +159,8 @@ function addColumnIndex(col,n) {
         return col.slice(0,-1) + String.fromCharCode(minChar + offset + n)
     }
     else {
-        return (col.length == 1 ? addColumnIndex(String.fromCharCode(minChar),~~((offset+n)/26)-1)
-                                : addColumnIndex(col.slice(0,-1),~~((offset+n)/26))
+        return (col.length == 1 ? addColumnIndex(String.fromCharCode(minChar),~~((offset + n)/(maxOffset+1))-1)
+                                : addColumnIndex(col.slice(0,-1),~~((offset + n)/(maxOffset+1)))
                ) + String.fromCharCode(minChar + ((offset + n) % (maxOffset+1)))
     }
 }
