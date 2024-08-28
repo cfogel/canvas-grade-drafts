@@ -1,8 +1,8 @@
 import { API_KEY, SPREADSHEET_ID, DATA_RANGE, READABLE_RANGE, CANVAS_TOKEN, CANVAS_ENDPOINT } from "./config.js";
 const SHEETS_ENDPOINT = "https://sheets.googleapis.com";
 
-const emptyRubric = rubric => Object.fromEntries(Object.keys(rubric).flatMap(k => [[`rubric_assessment[${k}][points]`,''],[`rubric_assessment[${k}][rating_id]`,''],[`rubric_assessment[${k}][comments]`,'']]))
-const rubricToParams = rubric => Object.fromEntries(Object.entries(rubric).flatMap(([key,{rating_id,comments,points}])=>[[`rubric_assessment[${key}][points]`,points],[`rubric_assessment[${key}][rating_id]`,rating_id],[`rubric_assessment[${key}][comments]`,comments]]))
+const emptyRubric = rubric => Object.keys(rubric).flatMap(k => [[`rubric_assessment[${k}][points]`,''],[`rubric_assessment[${k}][rating_id]`,''],[`rubric_assessment[${k}][comments]`,'']])
+const rubricToParams = rubric => Object.entries(rubric).flatMap(([key,{rating_id,comments,points}])=>[[`rubric_assessment[${key}][points]`,points],[`rubric_assessment[${key}][rating_id]`,rating_id],[`rubric_assessment[${key}][comments]`,comments]])
 
 chrome.action.onClicked.addListener(async (tab) => {
 });
@@ -51,9 +51,9 @@ async function loadData(tab) {
 
     const [,,,,grade,,rubric] = data;
 
-    let newData = await updateGrade(courseId,assignmentId,studentId,{...rubricToParams(JSON.parse(rubric)), 'submission[posted_grade]':grade})
+    let newData = await updateGrade(courseId,assignmentId,studentId,[...rubricToParams(JSON.parse(rubric)), ['submission[posted_grade]',grade]])
     if (newData.grade != grade) { // manual adjustments to rubric sums require a second API request
-        newData = await updateGrade(courseId,assignmentId,studentId,{'submission[posted_grade]':grade})
+        newData = await updateGrade(courseId,assignmentId,studentId,['submission[posted_grade]',grade])
     }
 }
 
@@ -89,7 +89,7 @@ async function updateGrade(course,assignment,student,newGrades) {
     const init = {
         method: 'PUT',
         headers: {Authorization: `Bearer ${CANVAS_TOKEN}`},
-        body: new URLSearchParams(newGrades)
+        body: newGrades.reduce((form,[k,v])=>(form.append(k,v),form),new FormData())
     }
     return fetch(`${CANVAS_ENDPOINT}/api/v1/courses/${course}/assignments/${assignment}/submissions/${student}`,init).then(r => r.json())
 }
