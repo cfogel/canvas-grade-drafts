@@ -53,7 +53,7 @@ async function loadData(tab) {
 
     let newData = await updateGrade(courseId,assignmentId,studentId,[...rubricToParams(JSON.parse(rubric)), ['submission[posted_grade]',grade]])
     if (newData.grade != grade) { // manual adjustments to rubric sums require a second API request
-        newData = await updateGrade(courseId,assignmentId,studentId,['submission[posted_grade]',grade])
+        newData = await updateGrade(courseId,assignmentId,studentId,[['submission[posted_grade]',grade]])
     }
 }
 
@@ -95,7 +95,7 @@ async function updateGrade(course,assignment,student,newGrades) {
 }
 
 async function addComments(course,assignment,student,comments) {
-    return Promise.all(comments.map(comment=>updateGrade(course,assignment,student,{'comment[text_comment]':comment})))
+    return Promise.all(comments.map(comment=>updateGrade(course,assignment,student,[['comment[text_comment]',comment]])))
 }
 
 async function deleteComment(course,assignment,student,comment) {
