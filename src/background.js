@@ -44,7 +44,7 @@ async function loadData(tab) {
     const [,courseId,assignmentId,studentId] = /\/courses\/(\d+)\/gradebook\/speed_grader\?assignment_id=(\d+)&student_id=(\d+)/.exec(tab.url)
 
     var { token } = await chrome.identity.getAuthToken({interactive: true});
-    const { values:rows } = await getRows(token)
+    const { values:rows, range } = await getRows(token)
 
     const data = rows.filter(([course,assignment,student,...rest]) => (course == courseId) && (assignment == assignmentId) && (student == studentId) && !rest.at(-1))
                      .toSorted((a,b)=>Date.parse(a[8])-Date.parse(b[8])).at(-1) // the most recent row for the course/assignment/student
@@ -55,6 +55,11 @@ async function loadData(tab) {
     if (newData.grade != grade) { // manual adjustments to rubric sums require a second API request
         newData = await updateGrade(courseId,assignmentId,studentId,[['submission[posted_grade]',grade]])
     }
+
+    const [,startSheet,startCol,startRow] = /^(\w+|'(?:[^']|'')+')!([A-Z]+)(\d+):/.exec(range)
+    const loadedCell = `${startSheet}!${addColumnIndex(startCol,data.length-1)}${Number(startRow)+rows.indexOf(data)}`
+
+    const updatedRow = await updateRows(token,loadedCell,[true])
 }
 
 async function getSubmission(course,assignment,student) {
@@ -75,6 +80,17 @@ async function addRows(token,range,...vals) {
         })
     }
     return fetch(`${SHEETS_ENDPOINT}/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}:append?valueInputOption=RAW&key=${API_KEY}`,init).then(r => r.json())
+}
+
+async function updateRows(token,range,...vals) {
+    const init = {
+        method: 'PUT',
+        headers: {Authorization: `Bearer ${token}`,'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            values: vals
+        })
+    }
+    return fetch(`${SHEETS_ENDPOINT}/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?valueInputOption=RAW&key=${API_KEY}`,init).then(r => r.json())
 }
 
 async function getRows(token) {
@@ -104,4 +120,20 @@ async function deleteComment(course,assignment,student,comment) {
         headers: {Authorization: `Bearer ${CANVAS_TOKEN}`}
     }
     return fetch(`${CANVAS_ENDPOINT}/api/v1/courses/${course}/assignments/${assignment}/submissions/${student}/comments/${comment}`,init).then(r => r.json())
+}
+
+function addColumnIndex(col,n) {
+    const minChar = "A".charCodeAt()
+    const maxOffset = "Z".charCodeAt() - minChar
+
+    const offset = col.at(-1).charCodeAt() - minChar
+
+    if (offset + n < (maxOffset+1)){
+        return col.slice(0,-1) + String.fromCharCode(minChar + offset + n)
+    }
+    else {
+        return (col.length == 1 ? addColumnIndex(String.fromCharCode(minChar),~~((offset+n)/26)-1)
+                                : addColumnIndex(col.slice(0,-1),~~((offset+n)/26))
+               ) + String.fromCharCode(minChar + ((offset + n) % (maxOffset+1)))
+    }
 }
