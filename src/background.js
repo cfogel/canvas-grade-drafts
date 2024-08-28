@@ -45,9 +45,9 @@ async function loadData(tab) {
     const [,courseId,assignmentId,studentId] = /\/courses\/(\d+)\/gradebook\/speed_grader\?assignment_id=(\d+)&student_id=(\d+)/.exec(tab.url);
 
     var { token } = await chrome.identity.getAuthToken({interactive: true});
-    const { values:rows, range } = await getRows(token, DATA_RANGE);
+    const { valueRanges: [{ values:dataRows, range:dataRowsRange },{ values:readableRows, range:readableRowsRange }] } = await getRows(token, DATA_RANGE, READABLE_RANGE);
 
-    const data = rows.filter(([course,assignment,student,...rest]) => (course == courseId) && (assignment == assignmentId) && (student == studentId) && !rest.at(-1))
+    const data = dataRows.filter(([course,assignment,student,...rest]) => (course == courseId) && (assignment == assignmentId) && (student == studentId) && !rest.at(-1))
                      .toSorted((a,b)=>Date.parse(a[8])-Date.parse(b[8])).at(-1); // the most recent non-loaded row for the course/assignment/student
 
     const [,,,,grade,,rubric] = data;
@@ -57,8 +57,8 @@ async function loadData(tab) {
         newData = await updateGrade(courseId,assignmentId,studentId,[['submission[posted_grade]',grade]]);
     }
 
-    const [,startSheet,startCol,startRow] = /^(\w+|'(?:[^']|'')+')!([A-Z]+)(\d+):/.exec(range);
-    const loadedCell = `${startSheet}!${addColumnIndex(startCol,data.length-1)}${Number(startRow)+rows.indexOf(data)}`;
+    const [,startSheet,startCol,startRow] = /^(\w+|'(?:[^']|'')+')!([A-Z]+)(\d+):/.exec(dataRowsRange);
+    const loadedCell = `${startSheet}!${addColumnIndex(startCol,data.length-1)}${Number(startRow)+dataRows.indexOf(data)}`;
 
     const updatedRow = await updateRows(token,loadedCell,[true]);
 

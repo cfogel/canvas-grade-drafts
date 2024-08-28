@@ -60,12 +60,12 @@ export async function updateRows(token, range, ...vals) {
     return fetch(`${SHEETS_ENDPOINT}/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?valueInputOption=RAW&key=${API_KEY}`, init).then(r => r.json());
 }
 
-export async function getRows(token, range) {
+export async function getRows(token, ...ranges) {
     const init = {
         method: 'Get',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
     };
-    return fetch(`${SHEETS_ENDPOINT}/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?valueRenderOption=UNFORMATTED_VALUE&key=${API_KEY}`, init).then(r => r.json());
+    return fetch(`${SHEETS_ENDPOINT}/v4/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${new URLSearchParams(ranges.map(r => ['ranges', r]))}&valueRenderOption=UNFORMATTED_VALUE&key=${API_KEY}`, init).then(r => r.json());
 }
 
 export async function updateGrade(course, assignment, student, newGrades) {
