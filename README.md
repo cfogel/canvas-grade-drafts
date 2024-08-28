@@ -1,6 +1,6 @@
 # Installation
 
-## manifest.json
+## [manifest.json](src/manifest.json)
 
 ### `key`:
 1. Open `chrome://extensions/` and turn Developer mode on
