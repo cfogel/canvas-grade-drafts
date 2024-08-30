@@ -1,3 +1,7 @@
+# About
+
+A Chrome extension to save Canvas grades as a draft and restore them later.
+
 # Usage
 
 Right now, the only way to activate it is through keyboard shortcuts - an actual UI is coming soon.
