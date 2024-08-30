@@ -2,22 +2,22 @@ import { CANVAS_TOKEN, CANVAS_ENDPOINT, API_KEY, SPREADSHEET_ID } from "./config
 
 export const SHEETS_ENDPOINT = "https://sheets.googleapis.com";
 
-export async function getAssignment(course, assignment) {
+export async function getAssignment(course, assignment, include=[]) {
     const init = {
         method: 'Get',
         headers: { Authorization: `Bearer ${CANVAS_TOKEN}` },
         mode: 'no-cors'
     };
-    return fetch(`${CANVAS_ENDPOINT}/api/v1/courses/${course}/assignments/${assignment}`, init).then(r => r.json());
+    return fetch(`${CANVAS_ENDPOINT}/api/v1/courses/${course}/assignments/${assignment}?${new URLSearchParams(include.map(i => ['include[]', i]))}`, init).then(r => r.json());
 }
 
-export async function getCourse(course) {
+export async function getCourse(course, include=[]) {
     const init = {
         method: 'Get',
         headers: { Authorization: `Bearer ${CANVAS_TOKEN}` },
         mode: 'no-cors'
     };
-    return fetch(`${CANVAS_ENDPOINT}/api/v1/courses/${course}`, init).then(r => r.json());
+    return fetch(`${CANVAS_ENDPOINT}/api/v1/courses/${course}?${new URLSearchParams(include.map(i => ['include[]', i]))}`, init).then(r => r.json());
 }
 
 export async function getUser(id) {
@@ -29,7 +29,7 @@ export async function getUser(id) {
     return fetch(`${CANVAS_ENDPOINT}/api/v1/users/${id}/profile`, init).then(r => r.json());
 }
 
-export async function getSubmission(course, assignment, student, include) {
+export async function getSubmission(course, assignment, student, include=['rubric_assessment','submission_comments']) {
     const init = {
         method: 'Get',
         headers: { Authorization: `Bearer ${CANVAS_TOKEN}` },
