@@ -1,0 +1,17 @@
+#save-button, #load-button {
+    color: white;
+    background-color: #00598d;
+    border: 1px solid #004C78;
+    border-radius: 3px;
+    margin-left: 3px;
+    padding: 8px 14px;
+    font: 1rem/22px "Lato Extended", "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    text-align: center;    
+}
+
+#action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px
+}

@@ -3,7 +3,9 @@
     "name": "Canvas Grade Drafts",
     "version": "0.1",
 
-    "action": {},
+    "action": {
+        "default_popup": "popup.html"
+    },
     "commands": {
         "save-grade": {
             "description": "Save and clear grade and rubric"

@@ -4,7 +4,7 @@ A Chrome extension to save Canvas grades as a draft and restore them later.
 
 # Usage
 
-Right now, the only way to activate it is through keyboard shortcuts - an actual UI is coming soon.
+Click "Save" to save grades as a draft.  Click "Load" to load them.  The extension can also be activated through keyboard shortcuts.
 
 ## Save and clear grade and rubric
 

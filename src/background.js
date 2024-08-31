@@ -4,18 +4,11 @@ import { addRows, getRows, getSubmission, updateGrade, updateRows } from "./util
 const emptyRubric = rubric => Object.keys(rubric).flatMap(k => [[`rubric_assessment[${k}][points]`,''],[`rubric_assessment[${k}][rating_id]`,''],[`rubric_assessment[${k}][comments]`,'']]);
 const rubricToParams = rubric => Object.entries(rubric).flatMap(([key,{rating_id,comments,points}])=>[[`rubric_assessment[${key}][points]`,points],[`rubric_assessment[${key}][rating_id]`,rating_id],[`rubric_assessment[${key}][comments]`,comments]]);
 
-chrome.action.onClicked.addListener(async (tab) => {
-    // TODO
-});
+chrome.commands.onCommand.addListener(commandListener);
 
-chrome.commands.onCommand.addListener(async (command,tab) => {
-    switch (command) {
-        case 'save-grade':
-            await saveData(tab);
-            break;
-        case 'load-grade':
-            await loadData(tab);
-            break;
+chrome.runtime.onConnect.addListener(async port => {
+    if (port.sender.url == (await chrome.action.getPopup({}))) {
+        port.onMessage.addListener(msg => commandListener(...msg))
     }
 });
 
@@ -78,5 +71,20 @@ function addColumnIndex(col,n) {
         return (col.length == 1 ? addColumnIndex(String.fromCharCode(minChar),~~((offset + n)/(maxOffset+1))-1)
                                 : addColumnIndex(col.slice(0,-1),~~((offset + n)/(maxOffset+1)))
                ) + String.fromCharCode(minChar + ((offset + n) % (maxOffset+1)));
+    }
+}
+
+async function commandListener(command, tab) {
+    try {
+        switch (command) {
+            case 'save-grade':
+                await saveData(tab);
+                break;
+            case 'load-grade':
+                await loadData(tab);
+                break;
+        }
+    } catch (error) {
+        console.log(error)
     }
 }
