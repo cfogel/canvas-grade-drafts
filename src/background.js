@@ -4,6 +4,21 @@ import { addRows, getRows, getSubmission, updateGrade, updateRows } from "./util
 const emptyRubric = rubric => Object.keys(rubric).flatMap(k => [[`rubric_assessment[${k}][points]`,''],[`rubric_assessment[${k}][rating_id]`,''],[`rubric_assessment[${k}][comments]`,'']]);
 const rubricToParams = rubric => Object.entries(rubric).flatMap(([key,{rating_id,comments,points}])=>[[`rubric_assessment[${key}][points]`,points],[`rubric_assessment[${key}][rating_id]`,rating_id],[`rubric_assessment[${key}][comments]`,comments]]);
 
+chrome.runtime.onInstalled.addListener(details => {
+    chrome.action.disable();
+    chrome.declarativeContent.onPageChanged.removeRules(undefined,() => {
+        chrome.declarativeContent.onPageChanged.addRules([{
+            conditions: [new chrome.declarativeContent.PageStateMatcher({pageUrl: {
+                urlPrefix: CANVAS_ENDPOINT, 
+                pathSuffix: "gradebook/speed_grader",
+                queryPrefix: "assignment_id",
+                queryContains: "student_id"
+            }})],
+            actions: [new chrome.declarativeContent.ShowAction()]
+        }]);
+    });
+});
+
 chrome.commands.onCommand.addListener(commandListener);
 
 chrome.runtime.onConnect.addListener(async port => {

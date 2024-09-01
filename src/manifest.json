@@ -25,6 +25,6 @@
         "client_id": "",
         "scopes": ["https://www.googleapis.com/auth/spreadsheets"]
     },
-    "permissions": ["identity","tabs"],
+    "permissions": ["identity","tabs","declarativeContent"],
     "host_permissions": [""]
 }
