@@ -71,7 +71,7 @@ async function loadData(tab) {
     const [,startSheetReadable,startColReadable,startRowReadable] = /^(\w+|'(?:[^']|'')+')!([A-Z]+)(\d+):/.exec(readableRowsRange);
     const loadedCellReadable = `${startSheetReadable}!${addColumnIndex(startColReadable,readableRows[0].length-1)}${Number(startRowReadable)+readableRows.findIndex(r=>r.at(-2)==data.at(-2))}`;
 
-    const [updatedRowData,updatedRowReadable] = await Promise.all([loadedCellData,loadedCellReadable].map(c=>updateRows(token,c,[true])));
+    const updatedData = await updateRows(token,[loadedCellData,[true]],[loadedCellReadable,[true]])
 }
 
 function addColumnIndex(col,n) {

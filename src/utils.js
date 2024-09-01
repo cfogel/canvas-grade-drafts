@@ -49,15 +49,16 @@ export async function addRows(token, range, ...vals) {
     return fetch(`${SHEETS_ENDPOINT}/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}:append?valueInputOption=RAW&key=${API_KEY}`, init).then(r => r.json());
 }
 
-export async function updateRows(token, range, ...vals) {
+export async function updateRows(token, ...rows) {
     const init = {
-        method: 'PUT',
+        method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            values: vals
+            valueInputOption: "RAW",
+            data: rows.map(([range,vals])=>({range,values:[vals]}))
         })
     };
-    return fetch(`${SHEETS_ENDPOINT}/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?valueInputOption=RAW&key=${API_KEY}`, init).then(r => r.json());
+    return fetch(`${SHEETS_ENDPOINT}/v4/spreadsheets/${SPREADSHEET_ID}/values:batchUpdate?key=${API_KEY}`, init).then(r => r.json());
 }
 
 export async function getRows(token, ...ranges) {
