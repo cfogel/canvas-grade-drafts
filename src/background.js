@@ -79,9 +79,11 @@ async function commandListener(command, tab) {
         switch (command) {
             case 'save-grade':
                 await saveData(tab);
+                await chrome.tabs.reload(tab.id);
                 break;
             case 'load-grade':
                 await loadData(tab);
+                await chrome.tabs.reload(tab.id);
                 break;
         }
     } catch (error) {
