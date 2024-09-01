@@ -56,7 +56,7 @@ async function loadData(tab) {
     const { valueRanges: [{ values:dataRows, range:dataRowsRange },{ values:readableRows, range:readableRowsRange }] } = await getRows(token, DATA_RANGE, READABLE_RANGE);
 
     const data = dataRows.filter(([course,assignment,student,...rest]) => (course == courseId) && (assignment == assignmentId) && (student == studentId) && !rest.at(-1))
-                     .toSorted((a,b)=>Date.parse(a[8])-Date.parse(b[8])).at(-1); // the most recent non-loaded row for the course/assignment/student
+                     .toSorted((a,b)=>Date.parse(a.at(-2))-Date.parse(b.at(-2))).at(-1); // the most recent non-loaded row for the course/assignment/student
 
     const [,,,,grade,,rubric] = data;
 
@@ -65,12 +65,13 @@ async function loadData(tab) {
         newData = await updateGrade(courseId,assignmentId,studentId,[['submission[posted_grade]',grade]]);
     }
 
-    const [,startSheet,startCol,startRow] = /^(\w+|'(?:[^']|'')+')!([A-Z]+)(\d+):/.exec(dataRowsRange);
-    const loadedCell = `${startSheet}!${addColumnIndex(startCol,data.length-1)}${Number(startRow)+dataRows.indexOf(data)}`;
+    const [,startSheetData,startColData,startRowData] = /^(\w+|'(?:[^']|'')+')!([A-Z]+)(\d+):/.exec(dataRowsRange);
+    const loadedCellData = `${startSheetData}!${addColumnIndex(startColData,data.length-1)}${Number(startRowData)+dataRows.indexOf(data)}`;
 
-    const updatedRow = await updateRows(token,loadedCell,[true]);
+    const [,startSheetReadable,startColReadable,startRowReadable] = /^(\w+|'(?:[^']|'')+')!([A-Z]+)(\d+):/.exec(readableRowsRange);
+    const loadedCellReadable = `${startSheetReadable}!${addColumnIndex(startColReadable,readableRows[0].length-1)}${Number(startRowReadable)+readableRows.findIndex(r=>r.at(-2)==data.at(-2))}`;
 
-    // TODO: update loaded value in readable range
+    const [updatedRowData,updatedRowReadable] = await Promise.all([loadedCellData,loadedCellReadable].map(c=>updateRows(token,c,[true])));
 }
 
 function addColumnIndex(col,n) {
