@@ -1,4 +1,4 @@
-import { DATA_RANGE, READABLE_RANGE } from "./config.js";
+import { CANVAS_ENDPOINT, DATA_RANGE, READABLE_RANGE } from "./config.js";
 import { addRows, getRows, getSubmission, updateGrade, updateRows } from "./utils.js";
 
 const emptyRubric = rubric => Object.keys(rubric).flatMap(k => [[`rubric_assessment[${k}][points]`,''],[`rubric_assessment[${k}][rating_id]`,''],[`rubric_assessment[${k}][comments]`,'']]);
